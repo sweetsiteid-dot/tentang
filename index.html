@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tentang</title>
+    <!-- Font Google -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #05070a;
+            font-family: 'Inter', sans-serif;
+            color: #e0e6ed;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Canvas Hujan */
+        #rainCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Ambient Glow & Overlay Melankolis */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(15, 23, 42, 0.4) 0%, rgba(5, 7, 10, 0.9) 100%);
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* Kontainer Utama */
+        .container {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* Tombol Utama */
+        .btn-sad {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #94a3b8;
+            padding: 14px 32px;
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            border-radius: 30px;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            outline: none;
+        }
+
+        .btn-sad:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #f1f5f9;
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Teks "Tentang" (Awalnya Tersembunyi) */
+        .about-text {
+            font-family: 'Cinzel', serif;
+            font-size: 2.8rem;
+            font-weight: 400;
+            letter-spacing: 6px;
+            color: #cbd5e1;
+            text-shadow: 0 0 20px rgba(203, 213, 225, 0.2), 0 0 40px rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity 2s ease, transform 2s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.95);
+            white-space: nowrap;
+        }
+
+        /* Class State saat Di-klik */
+        .container.active .btn-sad {
+            opacity: 0;
+            transform: translateY(10px) scale(0.9);
+            pointer-events: none;
+        }
+
+        .container.active .about-text {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        /* Tombol Mute Audio */
+        .audio-control {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            z-index: 20;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #64748b;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+
+        .audio-control:hover {
+            color: #e2e8f0;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .audio-control svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Canvas Efek Hujan -->
+    <canvas id="rainCanvas"></canvas>
+    <div class="overlay"></div>
+
+    <!-- Tombol Audio Mute/Unmute -->
+    <button class="audio-control" id="audioBtn" title="Suara Hujan">
+        <svg id="iconMuted" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+        <svg id="iconPlaying" viewBox="0 0 24 24" style="display: none;"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+    </button>
+
+    <!-- Konten Utama -->
+    <div class="container" id="mainContainer">
+        <button class="btn-sad" id="actionBtn">Klik Di Sini</button>
+        <div class="about-text">Tentang</div>
+    </div>
+
+    <script>
+        // --- 1. Animasi Canvas Hujan & Petir ---
+        const canvas = document.getElementById('rainCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let w, h;
+        function resize() {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Drop {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * w;
+                this.y = Math.random() * -h;
+                this.vy = 12 + Math.random() * 10;
+                this.len = 15 + Math.random() * 20;
+                this.alpha = 0.15 + Math.random() * 0.25;
+            }
+            update() {
+                this.y += this.vy;
+                if (this.y > h) this.reset();
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(180, 200, 220, ${this.alpha})`;
+                ctx.lineWidth = 1;
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x - 1, this.y + this.len);
+                ctx.stroke();
+            }
+        }
+
+        const drops = Array.from({ length: 180 }, () => new Drop());
+        let flashAlpha = 0;
+
+        function animate() {
+            ctx.clearRect(0, 0, w, h);
+
+            // Kilatan petir halus
+            if (Math.random() < 0.003) flashAlpha = 0.08;
+            if (flashAlpha > 0) {
+                ctx.fillStyle = `rgba(255, 255, 255, ${flashAlpha})`;
+                ctx.fillRect(0, 0, w, h);
+                flashAlpha -= 0.005;
+            }
+
+            drops.forEach(d => { d.update(); d.draw(); });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // --- 2. Generator Audio Suara Hujan (Web Audio API) ---
+        let audioCtx, isPlaying = false;
+
+        function createRainSound() {
+            if (audioCtx) return;
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            
+            const bufferSize = audioCtx.sampleRate * 2;
+            const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const output = noiseBuffer.getChannelData(0);
+            
+            for (let i = 0; i < bufferSize; i++) {
+                output[i] = Math.random() * 2 - 1;
+            }
+
+            const whiteNoise = audioCtx.createBufferSource();
+            whiteNoise.buffer = noiseBuffer;
+            whiteNoise.loop = true;
+
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(800, audioCtx.currentTime);
+
+            const gainNode = audioCtx.createGain();
+            gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime);
+
+            whiteNoise.connect(filter);
+            filter.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            whiteNoise.start();
+        }
+
+        const audioBtn = document.getElementById('audioBtn');
+        const iconMuted = document.getElementById('iconMuted');
+        const iconPlaying = document.getElementById('iconPlaying');
+
+        function toggleAudio() {
+            if (!audioCtx) createRainSound();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            if (isPlaying) {
+                audioCtx.suspend();
+                iconMuted.style.display = 'block';
+                iconPlaying.style.display = 'none';
+                isPlaying = false;
+            } else {
+                iconMuted.style.display = 'none';
+                iconPlaying.style.display = 'block';
+                isPlaying = true;
+            }
+        }
+
+        audioBtn.addEventListener('click', toggleAudio);
+
+        // --- 3. Interaksi Tombol ---
+        const mainContainer = document.getElementById('mainContainer');
+        const actionBtn = document.getElementById('actionBtn');
+
+        actionBtn.addEventListener('click', () => {
+            mainContainer.classList.add('active');
+            
+            // Otomatis jalankan audio hujan saat diklik jika belum menyala
+            if (!isPlaying) {
+                toggleAudio();
+            }
+        });
+    </script>
+</body>
+</html>
